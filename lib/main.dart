@@ -7,11 +7,17 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:weighty/screens/auth_page.dart';
 import 'package:weighty/screens/connection_error_page.dart';
 import 'package:weighty/screens/home_screen.dart';
-
+import 'package:weighty/services/notification_service.dart';
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  NotificationService notificationService = NotificationService();
+
+  //Initialize the notification
+  await notificationService.initNotification();
+  await notificationService.scheduleNotification(
+      "Weighty", "Alert for consistency");
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

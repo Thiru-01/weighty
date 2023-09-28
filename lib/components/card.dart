@@ -221,16 +221,20 @@ class WeiCardDetail extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: calculateFontSize(factor: 22, context: context)),
+          Expanded(
+            flex: 30,
+            child: Text(
+              title,
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: calculateFontSize(factor: 22, context: context)),
+            ),
           ),
-          Padding(
-            padding: EdgeInsets.only(left: SizeConstrains.DEFAULT_PADDING),
+          Expanded(
+            flex: 70,
             child: Text(
               result,
+              textAlign: TextAlign.right,
               style: TextStyle(
                   overflow: TextOverflow.ellipsis,
                   fontWeight: FontWeight.bold,

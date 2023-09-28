@@ -11,6 +11,19 @@ import 'package:weighty/models/wei_model.dart';
 import 'package:weighty/services/firestorage_service.dart';
 import 'package:weighty/utils/utils.dart';
 
+abstract class CURD<T> {
+  Future<void> add({required T data, required String path});
+  Future<void> update(
+      {required Map<String, dynamic> data, required String path});
+  Future<void> delete({required String path});
+  Future<T?> get({required String path});
+  Future<List<T?>> getAllData({required String path});
+  Future<List<T>> getFilteredContent(
+      {required String path,
+      required List<String> filter,
+      required String filterField});
+}
+
 class FirestoreCURDService extends WeiNotifierDelegate
     implements CURD<WeiData> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -86,6 +99,7 @@ class FirestoreCURDService extends WeiNotifierDelegate
 
   @override
   Future<void> delete({required String path}) async {
+    printInfo(info: path);
     notifiers.openDialogues(
         context: context,
         dialogueType: DialogueType.LOADING,
@@ -176,7 +190,6 @@ class FirestoreCURDService extends WeiNotifierDelegate
                 WeiData.fromJson(snapshot.data()!),
             toFirestore: (value, options) => value.toJson())
         .get();
-
     return queryResult.docs.map((e) => e.data()).toList();
   }
 
@@ -184,26 +197,14 @@ class FirestoreCURDService extends WeiNotifierDelegate
   Future<List<WeiData>> getAllData({required String path}) async {
     Query<WeiData> queryResult = _firestore
         .collection(path)
-        .where(FieldPath.documentId, isNotEqualTo: "")
+        .where(FieldPath.documentId,
+            isNotEqualTo: "null") //Unknown value that will get all element
         .withConverter<WeiData>(
             fromFirestore: (snapshot, options) =>
                 WeiData.fromJson(snapshot.data()!),
             toFirestore: (value, options) => value.toJson());
     return (await queryResult.get()).docs.map((e) => e.data()).toList();
   }
-}
-
-abstract class CURD<T> {
-  Future<void> add({required T data, required String path});
-  Future<void> update(
-      {required Map<String, dynamic> data, required String path});
-  Future<void> delete({required String path});
-  Future<T?> get({required String path});
-  Future<List<T?>> getAllData({required String path});
-  Future<List<T>> getFilteredContent(
-      {required String path,
-      required List<String> filter,
-      required String filterField});
 }
 
 class FirestoreFetcherService extends FirestoreCURDService {
@@ -238,24 +239,32 @@ class FirestoreFetcherService extends FirestoreCURDService {
   List<String> _getListOfFilterDate(String filter) {
     List<String> result = [];
     DateTime currentate = DateTime.now();
+    bool allowThisMonth = false;
     //By default it will take the last month
-    DateTime startDate = DateTime(currentate.year, currentate.month - 1, 1);
+    DateTime startDate = DateTime(currentate.year, currentate.month, 1);
     switch (filter) {
+      case "This Month":
+        startDate = DateTime(currentate.year, currentate.month, 1);
+        allowThisMonth = true;
+        break;
       case "Last Month":
         startDate = DateTime(currentate.year, currentate.month - 1, 1);
         break;
-      case "Last 3 Month":
+      case "Last 2 Month":
         startDate = DateTime(currentate.year, currentate.month - 3, 1);
-        break;
-      case "Last 6 Month":
-        startDate = DateTime(currentate.year, currentate.month - 6, 1);
+        allowThisMonth = true;
         break;
     }
-    while (startDate.isBefore(currentate)) {
+    while (startDate.isBefore(currentate) &&
+        (allowThisMonth ||
+            startDate
+                .isBefore(DateTime(currentate.year, currentate.month, 1)))) {
       result.add(
           "${BasicUtils.calculateWeekOfYear(startDate)}-${startDate.year}");
-      startDate = startDate.add(const Duration(days: 7));
+      startDate = startDate
+          .add(const Duration(days: 7))
+          .subtract(Duration(days: currentate.weekday - 1));
     }
-    return result;
+    return result.toSet().toList();
   }
 }

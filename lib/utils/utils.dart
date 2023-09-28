@@ -18,6 +18,6 @@ double calculateFontSize(
 class BasicUtils {
   static String calculateWeekOfYear(DateTime dateTime) {
     int noOfDaysInYear = int.parse(DateFormat("D").format(dateTime));
-    return "W-${((noOfDaysInYear - 1) / 7).floor()}";
+    return "W-${((noOfDaysInYear - 1) / 7).ceil()}";
   }
 }

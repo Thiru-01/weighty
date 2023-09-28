@@ -45,4 +45,12 @@ class FirestorageService extends WeiNotifierDelegate {
       printError(info: "Unable to delete th image: $e");
     }
   }
+
+  Future<void> deleteImageByUrl({required String url}) async {
+    try {
+      await _firebaseStorage.refFromURL(url).delete();
+    } catch (e) {
+      printError(info: "Unable to delete the image: $e");
+    }
+  }
 }

@@ -1,12 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:weighty/components/avatars.dart';
 import 'package:weighty/components/card.dart';
 import 'package:weighty/components/graph.dart';
-import 'package:weighty/controllers/firestore_controller.dart';
 import 'package:weighty/models/wei_model.dart';
 import 'package:weighty/screens/tracker_add_page.dart';
 import 'package:weighty/services/firestore_service.dart';
@@ -24,9 +21,9 @@ class _HomePageState extends State<HomePage> {
   User? user = FirebaseAuth.instance.currentUser;
   ValueNotifier<bool> refershNotifier = ValueNotifier<bool>(false);
   List<String> filterTypes = [
+    "This Month",
     "Last Month",
-    "Last 3 Month",
-    "Last 6 Month",
+    "Last 2 Month",
     "All"
   ];
 
@@ -86,6 +83,9 @@ class _HomePageState extends State<HomePage> {
                                 filterTypes.indexOf(selectedValue.value),
                             sourceContet: reportData,
                             onSelected: (selectedValue) async {
+                              //Make the list of report data to null because it will shows the previous content
+                              reportData.value = [];
+                              reportData.refresh();
                               this.selectedValue.value = selectedValue;
                               //Making the future builder to rebuild
                               refershNotifier.value = !refershNotifier.value;
@@ -140,15 +140,7 @@ class _HomePageState extends State<HomePage> {
         "Home",
         style: TextStyle(color: Colors.white),
       ),
-      actions: [
-        IconButton(
-            onPressed: () {},
-            icon: Icon(
-              Icons.notifications,
-              size: calculateWidth(factor: 0.03, context: context),
-              color: Colors.white,
-            ))
-      ],
+      actions: const [],
       leading: Avatar(
         url: user?.photoURL,
       ),
